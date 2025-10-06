@@ -1,0 +1,33 @@
+{
+  "helperPoints": {
+    "1422408311071969360": 2,
+    "1265643734138359808": 4,
+    "1052580900497534999": 2
+  },
+  "activeTickets": {},
+  "ticketCounter": 31,
+  "categoryPoints": {
+    "Ultra Weeklies": 2,
+    "Ultra Speaker": 1,
+    "Temple Shrine": 1,
+    "Ultra Dailies": 1,
+    "Spamming": 1
+  },
+  "ticketChannels": {
+    "Ultra Weeklies": "1422889294942572585"
+  },
+  "logsChannel": "1422889242060652594",
+  "allowedCompletionRoles": [
+    "1347513259447549994",
+    "1422925879574794392"
+  ],
+  "allowedCreationRoles": [
+    "1380244868198174833",
+    "1347496786125787146",
+    "1347486304492982374",
+    "1347497581009178645",
+    "1422925879574794392",
+    "1422925923526770849",
+    "1422927393466613821"
+  ]
+}
