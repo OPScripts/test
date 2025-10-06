@@ -2,8 +2,8 @@
 
 This is a Discord bot built with discord.js v14 that manages a comprehensive ticket system with helper points and leaderboard functionality. The bot is designed for an AQW (AdventureQuest Worlds) guild to handle support requests across five categories: Ultra Weeklies, Ultra Speaker, Temple Shrine, Ultra Dailies, and Spamming. The system tracks helper contributions through a points system with an interactive leaderboard.
 
-**Last Updated:** October 5, 2025
-**Status:** Fully functional and production-ready
+**Last Updated:** October 6, 2025
+**Status:** Fully functional and production-ready with MongoDB support
 
 # User Preferences
 
@@ -13,21 +13,27 @@ Preferred communication style: Simple, everyday language.
 
 ## Application Structure
 
-**File-based Data Persistence**: The application uses a JSON file (`data.json`) for data storage rather than a traditional database. This approach provides:
-- Simple setup with no external database dependencies
-- Easy data inspection and manual editing if needed
-- Sufficient performance for small to medium-sized Discord servers
-- Trade-off: Not suitable for high-concurrency scenarios or large-scale deployments
+**Dual-Mode Data Persistence**: The application supports both MongoDB and JSON file storage with automatic fallback:
+- **MongoDB Mode** (when `MONGO_URI` environment variable is set):
+  - Uses mongoose for database operations
+  - Automatic migration from data.json on first connection
+  - Suitable for production deployments and high-concurrency scenarios
+  - Better scalability and performance
+- **JSON File Fallback** (when `MONGO_URI` is not set):
+  - Uses `data.json` for local storage
+  - Simple setup with no external database dependencies
+  - Easy data inspection and manual editing if needed
+  - Sufficient for development and small to medium-sized Discord servers
 
 The data structure tracks nine main entities:
-- `helperPoints`: Object mapping user IDs to their accumulated points
-- `activeTickets`: Object storing currently open ticket information (includes selectedHelpers and completedBy during confirmation)
-- `ticketCounter`: Incrementing integer for generating unique ticket IDs
-- `categoryPoints`: Object mapping category names to point values (default: 1 per category)
-- `ticketChannels`: Object mapping category names to channel/category IDs for ticket routing
-- `logsChannel`: Channel ID where ticket logs are posted
-- `allowedCompletionRoles`: Array of role IDs that can complete/finalize tickets
-- `allowedCreationRoles`: Array of role IDs that can create and use tickets
+- `helperPoints`: Object mapping user IDs to their accumulated points (MongoDB: Helper model)
+- `activeTickets`: Object storing currently open ticket information (MongoDB: Ticket model)
+- `ticketCounter`: Incrementing integer for generating unique ticket IDs (MongoDB: Config model)
+- `categoryPoints`: Object mapping category names to point values (MongoDB: Config model)
+- `ticketChannels`: Object mapping category names to channel/category IDs (MongoDB: Config model)
+- `logsChannel`: Channel ID where ticket logs are posted (MongoDB: Config model)
+- `allowedCompletionRoles`: Array of role IDs that can complete/finalize tickets (MongoDB: Config model)
+- `allowedCreationRoles`: Array of role IDs that can create and use tickets (MongoDB: Config model)
 
 ## Bot Architecture
 
@@ -63,12 +69,24 @@ The data structure tracks nine main entities:
 
 ## Data Flow
 
-**Synchronous File Operations**: The implementation uses synchronous file I/O (`readFileSync`/`writeFileSync`):
-- Simpler error handling and code flow
-- Acceptable for low-frequency operations (ticket creation/closure)
-- Trade-off: May cause brief blocking on I/O operations, but negligible impact for Discord bot use cases
+**Unified Data Abstraction Layer** (`db.js`):
+- `connectDB()`: Initializes connection (MongoDB if MONGO_URI exists, otherwise fallback mode)
+- `getData()`: Async function to retrieve all data (from MongoDB or data.json)
+- `saveData(data)`: Async function to persist data (to MongoDB or data.json)
+- Automatic migration from data.json to MongoDB on first connection
+- Transparent switching between storage backends
 
-**In-memory Data Loading**: Data is loaded from file and likely cached in memory during bot runtime, with saves triggered on state changes (ticket creation, closure, point awards).
+**MongoDB Operations** (when enabled):
+- Uses mongoose schemas for data validation
+- Helper model: stores user points
+- Ticket model: stores active ticket information
+- Config model: stores configuration key-value pairs
+- Atomic operations for data consistency
+
+**JSON File Operations** (fallback mode):
+- Synchronous file I/O (`readFileSync`/`writeFileSync`) within db.js
+- Simple error handling and code flow
+- Acceptable for low-frequency operations (ticket creation/closure)
 
 # External Dependencies
 
@@ -81,9 +99,18 @@ Primary framework providing:
 - Event system for Discord events
 - Permission and intent management
 
+## Mongoose (v8.9.4)
+
+MongoDB ODM (Object Data Modeling) library:
+- Schema-based data validation
+- Connection pooling and management
+- Query building and execution
+- Middleware and hooks support
+- Used only when MONGO_URI environment variable is set
+
 ## Node.js Built-in Modules
 
-- **fs (File System)**: Handles reading/writing the JSON data file
+- **fs (File System)**: Handles reading/writing the JSON data file (in fallback mode)
 - **path**: Manages file path construction in a cross-platform manner
 
 ## Discord API
@@ -100,6 +127,32 @@ Expected deployment on Replit or similar Node.js hosting platform with:
 - Persistent file storage for `data.json`
 - Environment variable support for Discord bot token (`DISCORD_BOT_TOKEN`)
 - Always-on or keep-alive mechanism to maintain bot connection
+
+# Recent Changes
+
+**October 6, 2025 - MongoDB Integration:**
+- **Added MongoDB Support with Automatic Fallback:**
+  - Integrated mongoose for MongoDB connectivity
+  - Created `db.js` abstraction layer for unified data operations
+  - Bot automatically uses MongoDB when `MONGO_URI` environment variable is set
+  - Falls back to `data.json` when MongoDB is not configured
+  - Zero-setup required - works out of the box in both modes
+- **Database Models Created:**
+  - `Helper` model: stores userId and points
+  - `Ticket` model: stores ticket information with channel tracking
+  - `Config` model: stores configuration key-value pairs
+- **Automatic Data Migration:**
+  - Migrates existing data.json to MongoDB on first connection
+  - Preserves all existing data during migration
+  - Logs clearly indicate which storage mode is active
+- **Updated index.js:**
+  - Replaced direct file operations with async db.js functions
+  - All data operations now use `await getData()` and `await saveData()`
+  - Maintains all existing features and commands
+- **Production Ready:**
+  - Can be deployed to Railway or similar platforms with MongoDB
+  - Simply add MONGO_URI environment variable to enable database mode
+  - No code changes needed to switch between storage modes
 
 # Recent Changes
 

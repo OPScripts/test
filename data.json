@@ -1,17 +1,17 @@
 {
   "helperPoints": {
-    "1422408311071969360": 2,
-    "1265643734138359808": 4,
-    "1052580900497534999": 2
+    "1052580900497534999": 2,
+    "1265643734138359808": 2,
+    "951305049919873065": 2
   },
   "activeTickets": {},
-  "ticketCounter": 31,
+  "ticketCounter": 1,
   "categoryPoints": {
     "Ultra Weeklies": 2,
-    "Ultra Speaker": 1,
-    "Temple Shrine": 1,
-    "Ultra Dailies": 1,
-    "Spamming": 1
+    "Ultra Speaker": 3,
+    "Temple Shrine": 2,
+    "Ultra Dailies": 2,
+    "Spamming": 5
   },
   "ticketChannels": {
     "Ultra Weeklies": "1422889294942572585"
